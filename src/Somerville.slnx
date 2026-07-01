@@ -5,4 +5,5 @@
   <Project Path="Somerville.MethodInjection/Somerville.MethodInjection.csproj" />
   <Project Path="Somerville.Primitives/Somerville.Primitives.csproj" />
   <Project Path="Somerville.TestProject/Somerville.TestProject.csproj" />
+  <Project Path="System.Private.CoreLib/System.Private.CoreLib.csproj" />
 </Solution>

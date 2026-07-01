@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Somerville.Primitives.CLR.VM;
+using Somerville.Primitives;
+
+[assembly: IgnoresAccessChecksTo("System.Private.CoreLib")]
 
 namespace Somerville.TestProject;
 
-public static class InterfaceInjector
+public static unsafe class InterfaceInjector
 {
     private static AssemblyName SyntheticParentAsmName = new("InterfaceInjection.SyntheticParents");
     private static AssemblyBuilder? _syntheticParentsAsm;
@@ -34,23 +37,23 @@ public static class InterfaceInjector
 
     public static string DbgPrintTree(Type child)
     {
-        string InnerPrintTree(MethodTable handle)
+        string InnerPrintTree(MethodTable* handle)
         {
             var sb = new StringBuilder();
-            sb.Append($"{handle.DangerousGetHandle():X}");
-            handle = handle.ParentMethodTable;
+            sb.Append($"{(nint)handle:X}");
+            handle = handle->ParentMethodTable;
 
-            while (handle.DangerousGetHandle() != 0)
+            while ((nint)handle != 0)
             {
                 sb.Append(" -> ");
-                sb.Append($"{handle.DangerousGetHandle():X}");
-                handle = handle.ParentMethodTable;
+                sb.Append($"{(nint)handle:X}");
+                handle = handle->ParentMethodTable;
             }
 
             return sb.ToString();
         }
 
-        var handle = MethodTable.FromType(child);
+        var handle = child.AsMethodTable();
         return $"{child.FullName}: {InnerPrintTree(handle)}";
     }
 
@@ -79,25 +82,24 @@ public static class InterfaceInjector
         syntheticParentBuilder.AddInterfaceImplementation(syntheticParentImplType);
         var syntheticParentType = syntheticParentBuilder.CreateType();
 
-        var targetMT = MethodTable.FromType(targetType);
-        var syntheticParentMT = MethodTable.FromType(syntheticParentType);
-        var injectedMT = MethodTable.FromType(injectedType);
+        var targetMT = targetType.AsMethodTable();
+        var syntheticParentMT = syntheticParentType.AsMethodTable();
+        var injectedMT = injectedType.AsMethodTable();
 
-        targetMT.ParentMethodTable = syntheticParentMT;
+        targetMT->ParentMethodTable = syntheticParentMT;
 
-        unsafe
+        var oldCount = targetMT->InterfaceCount;
+        var newCount = oldCount + 1;
+        var newInterfaceMapPtr = (MethodTable**)Marshal.AllocHGlobal(newCount * sizeof(MethodTable*));
+
+        for (var i = 0; i < oldCount; i++)
         {
-            var newSize = targetMT.InterfaceCount + 1;
-            var newInterfaceMapPtr = Marshal.AllocHGlobal(newSize * sizeof(nint));
-            var newInterfaceMap = new Span<MethodTable>((void*)newInterfaceMapPtr, newSize);
-            targetMT.InterfaceMap.CopyTo(newInterfaceMap);
-
-            // Add new interface entry
-            newInterfaceMap[targetMT.InterfaceCount] = injectedMT;
-
-            // Update target's MethodTable
-            targetMT.InterfaceMapPtr = newInterfaceMapPtr;
-            targetMT.InterfaceCount++;
+            newInterfaceMapPtr[i] = targetMT->InterfaceMap[i];
         }
+
+        newInterfaceMapPtr[oldCount] = injectedMT;
+
+        targetMT->InterfaceMap = newInterfaceMapPtr;
+        targetMT->InterfaceCount = (ushort)newCount;
     }
 }

@@ -5,10 +5,9 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <AssemblyVersion>10.0.0.0</AssemblyVersion>
+        <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
+        <RootNamespace>System</RootNamespace>
     </PropertyGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\System.Private.CoreLib\System.Private.CoreLib.csproj"/>
-    </ItemGroup>
 
 </Project>
