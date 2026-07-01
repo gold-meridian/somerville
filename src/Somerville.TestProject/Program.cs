@@ -4,6 +4,7 @@ using Somerville.TestProject;
 var sanity = new SanityB();
 Console.WriteLine($"SANITY: {sanity is IBar}");
 
+var foo = new Foo();
 var baz = new Baz();
 Console.WriteLine(InterfaceInjector.DbgPrintTree(typeof(Baz)));
 Console.WriteLine(InterfaceInjector.DbgPrintTree(typeof(Foo)));
@@ -27,6 +28,7 @@ Console.WriteLine($"baz is IBar = {baz is IBar}");
 // Console.WriteLine($"decl invocation: {method.Invoke(foo, [])}");
 // Console.WriteLine($"def invocation: {ifaceMethod.Invoke(foo, [])}");
 Console.WriteLine($"baz.HatedNumber() = {baz.HatedNumber()}");
+Console.WriteLine($"((IBar)(object)foo).FavouriteNumber() = {((IBar)(object)foo).FavouriteNumber()}");
 Console.WriteLine($"((IBar)(object)baz).FavouriteNumber() = {((IBar)(object)baz).FavouriteNumber()}");
 
 // Console.WriteLine();
@@ -44,7 +46,8 @@ Console.WriteLine($"((IBar)(object)baz).FavouriteNumber() = {((IBar)(object)baz)
 //     Console.WriteLine("]");
 // }
 
-public class Foo
+public interface ITwo;
+public class Foo : ITwo
 {
     public int HatedNumber()
     {
