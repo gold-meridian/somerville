@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Somerville.Framework\Somerville.Framework.csproj"/>
-        <ProjectReference Include="..\System.Private.CoreLib\System.Private.CoreLib.csproj"/>
+        <ProjectReference Include="..\System.Private.CoreLib\System.Private.CoreLib.csproj" PrivateAssets="All" Private="false"/>
     </ItemGroup>
 
 </Project>

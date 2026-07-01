@@ -6,7 +6,8 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <AssemblyVersion>10.0.0.0</AssemblyVersion>
-        <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
+        <Deterministic>true</Deterministic>
+        <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
         <RootNamespace>System</RootNamespace>
     </PropertyGroup>
 
