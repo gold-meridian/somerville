@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Somerville.AttributeInjection\Somerville.AttributeInjection.csproj"/>
+        <ProjectReference Include="..\Somerville.InterfaceInjection\Somerville.InterfaceInjection.csproj"/>
+        <ProjectReference Include="..\Somerville.MethodInjection\Somerville.MethodInjection.csproj"/>
+    </ItemGroup>
+
+</Project>

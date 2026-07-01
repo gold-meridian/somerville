@@ -1,2 +1,7 @@
 <Solution>
+  <Project Path="Somerville.AttributeInjection/Somerville.AttributeInjection.csproj" />
+  <Project Path="Somerville.Framework/Somerville.Framework.csproj" />
+  <Project Path="Somerville.InterfaceInjection/Somerville.InterfaceInjection.csproj" />
+  <Project Path="Somerville.MethodInjection/Somerville.MethodInjection.csproj" />
+  <Project Path="Somerville.Primitives/Somerville.Primitives.csproj" />
 </Solution>
