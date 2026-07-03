@@ -13,4 +13,8 @@
         <ProjectReference Include="..\System.Private.CoreLib\System.Private.CoreLib.csproj" PrivateAssets="All" Private="false"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4"/>
+    </ItemGroup>
+
 </Project>
