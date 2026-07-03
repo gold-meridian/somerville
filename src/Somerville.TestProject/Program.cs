@@ -1,6 +1,8 @@
 ﻿using System;
 using Somerville.TestProject;
 
+InterfaceInjector.Init();
+
 var sanity = new SanityB();
 Console.WriteLine($"SANITY: {sanity is IBar}");
 
@@ -23,28 +25,20 @@ Console.WriteLine($"Baz::BaseType: {baz.GetType().BaseType!.AssemblyQualifiedNam
 Console.WriteLine($"Baz::BaseType.BaseType: {baz.GetType().BaseType?.BaseType?.AssemblyQualifiedName}");
 Console.WriteLine($"baz is IBar = {baz is IBar}");
 
-// var method = typeof(Foo).GetMethod("IBar.FavouriteNumber", BindingFlags.Instance | BindingFlags.NonPublic);
-// var ifaceMethod = typeof(IBar).GetMethod("FavouriteNumber")!;
-// Console.WriteLine($"decl invocation: {method.Invoke(foo, [])}");
-// Console.WriteLine($"def invocation: {ifaceMethod.Invoke(foo, [])}");
 Console.WriteLine($"baz.HatedNumber() = {baz.HatedNumber()}");
 Console.WriteLine($"((IBar)(object)foo).FavouriteNumber() = {((IBar)(object)foo).FavouriteNumber()}");
-Console.WriteLine($"((IBar)(object)baz).FavouriteNumber() = {((IBar)(object)baz).FavouriteNumber()}");
+// Console.WriteLine($"((IBar)(object)baz).FavouriteNumber() = {((IBar)(object)baz).FavouriteNumber()}");
 
-// Console.WriteLine();
+Console.WriteLine();
 
-// Console.WriteLine($"decl fptr: {method.MethodHandle.GetFunctionPointer()}");
-// Console.WriteLine($"def fptr: {ifaceMethod.MethodHandle.GetFunctionPointer()}");
-// Console.WriteLine($"natural fptr: {((Func<int>)((IBar)(object)foo).FavouriteNumber).Method.MethodHandle.GetFunctionPointer()}");
+InterfaceInjector.Deinit();
+Console.WriteLine(InterfaceInjector.DbgPrintTree(typeof(Baz)));
+Console.WriteLine(InterfaceInjector.DbgPrintTree(typeof(Foo)));
 
-// void WriteArr<T>(T[] arr) {
-//     Console.Write("[ ");
-//     foreach (var elem in arr) {
-//         Console.Write(elem?.ToString() ?? "null");
-//         Console.Write(", ");
-//     }
-//     Console.WriteLine("]");
-// }
+Console.WriteLine($"Baz::BaseType: {baz.GetType().BaseType!.AssemblyQualifiedName}");
+Console.WriteLine($"Baz::BaseType.BaseType: {baz.GetType().BaseType?.BaseType?.AssemblyQualifiedName}");
+Console.WriteLine($"baz is IBar = {baz is IBar}");
+Console.WriteLine($"((IBar)(object)foo).FavouriteNumber() = {((IBar)(object)foo).FavouriteNumber()}");
 
 public interface ITwo;
 public class Foo : ITwo
