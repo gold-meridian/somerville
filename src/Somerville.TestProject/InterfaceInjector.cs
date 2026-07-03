@@ -191,7 +191,7 @@ public static unsafe class InterfaceInjector
         {
             // TODO: ensure that decl and def have compatible signatures
 
-            var implBuilder = syntheticParentImplBuilder.DefineMethod($"{injectedType.Name}.{decl.Name}", MethodAttributes.Virtual | MethodAttributes.Final, typeof(int), null);
+            var implBuilder = syntheticParentImplBuilder.DefineMethod($"{injectedType.Name}.{decl.Name}", MethodAttributes.Virtual | MethodAttributes.Final, decl.ReturnType, null);
             var il = implBuilder.GetILGenerator();
 
             if (!decl.IsStatic)

@@ -16,7 +16,7 @@ Console.WriteLine($"baz.HatedNumber() = {baz.HatedNumber()}");
 Console.WriteLine();
 
 // post-injection
-InterfaceInjector.InjectInterface(typeof(Foo), typeof(IBar), (typeof(IBar).GetMethod("FavouriteNumber")!, ((Func<IBar, int>)MethodImpls.MyFavouriteNumber).Method));
+InterfaceInjector.InjectInterface(typeof(Foo), typeof(IBar), (typeof(IBar).GetMethod("FavouriteNumber")!, ((Func<IBar, int>)MethodImpls.MyFavouriteNumber).Method), (typeof(IBar).GetMethod("DoNothing")!, ((Action<IBar>)MethodImpls.DoNothing).Method));
 Console.WriteLine(InterfaceInjector.DbgPrintTree(typeof(Baz)));
 Console.WriteLine(InterfaceInjector.DbgPrintTree(typeof(Foo)));
 
@@ -46,6 +46,8 @@ public static class MethodImpls
     {
         return 22;
     }
+
+    public static void DoNothing(IBar self) { }
 }
 
 public interface ITwo;
@@ -62,4 +64,5 @@ public class Baz : Foo { }
 public interface IBar
 {
     int FavouriteNumber();
+    void DoNothing();
 }
