@@ -32,25 +32,21 @@ public static unsafe class InterfaceInjector
     }
 
     private static AssemblyName SyntheticParentAsmName = new("InterfaceInjection.SyntheticParents");
-    private static AssemblyBuilder? _syntheticParentsAsm;
-
     private static AssemblyBuilder SyntheticParentsAsm
     {
         get
         {
-            _syntheticParentsAsm ??= AssemblyBuilder.DefineDynamicAssembly(SyntheticParentAsmName, AssemblyBuilderAccess.Run);
-            return _syntheticParentsAsm;
+            field ??= AssemblyBuilder.DefineDynamicAssembly(SyntheticParentAsmName, AssemblyBuilderAccess.Run);
+            return field;
         }
     }
-
-    private static ModuleBuilder? _syntheticParentsMod;
 
     private static ModuleBuilder SyntheticParentsMod
     {
         get
         {
-            _syntheticParentsMod ??= SyntheticParentsAsm.DefineDynamicModule(SyntheticParentAsmName.Name!);
-            return _syntheticParentsMod;
+            field ??= SyntheticParentsAsm.DefineDynamicModule(SyntheticParentAsmName.Name!);
+            return field;
         }
     }
 
@@ -91,6 +87,8 @@ public static unsafe class InterfaceInjector
         {
             hook.Undo();
         }
+
+        // TODO: clean up the dynamic assembly?
     }
 
     private static class Hooks
@@ -101,7 +99,7 @@ public static unsafe class InterfaceInjector
         // TODO are these TypeHandles or RuntimeTypeHandles? Is there a difference?
         public static bool IsInstanceOf_NoCacheLookup(orig_IsInstanceOf_NoCacheLookup orig, void* toTypeHnd, bool throwCastException, ObjectHandleOnStack obj)
         {
-            return true;
+            throw new Exception("is this thing on?");
             return orig(toTypeHnd, throwCastException, obj) switch
             {
                 false => ShouldBeInstanceOf(new TypeHandle(toTypeHnd).FindMethodTable(), Unsafe.AsRef<object>(obj._ptr).GetType().AsMethodTable()),
@@ -174,7 +172,8 @@ public static unsafe class InterfaceInjector
         return $"{child.FullName}: {InnerPrintTree(handle)}";
     }
 
-    public static void InjectInterface(Type targetType, Type injectedType, params ReadOnlySpan<MethodInfo> defs)
+    // TODO would be more convenient to pass in a delegate, but then we would have to keep it around somewhere
+    public static void InjectInterface(Type targetType, Type injectedType, params ReadOnlySpan<(MethodInfo, MethodInfo)> defs)
     {
         if (targetType.FullName is null)
         {
@@ -188,14 +187,31 @@ public static unsafe class InterfaceInjector
         var syntheticParentImplBuilder = SyntheticParentsMod.DefineType($"__IMPL__.{targetType.FullName}", TypeAttributes.Public | TypeAttributes.Interface | TypeAttributes.Abstract);
         syntheticParentImplBuilder.AddInterfaceImplementation(injectedType);
 
-        foreach (var def in defs)
+        foreach (var (decl, def) in defs)
         {
-            // TODO: generate useful bodies for these methods
-            var implBuilder = syntheticParentImplBuilder.DefineMethod($"{injectedType.Name}.{def.Name}", MethodAttributes.Virtual | MethodAttributes.Final, typeof(int), null);
+            // TODO: ensure that decl and def have compatible signatures
+
+            var implBuilder = syntheticParentImplBuilder.DefineMethod($"{injectedType.Name}.{decl.Name}", MethodAttributes.Virtual | MethodAttributes.Final, typeof(int), null);
             var il = implBuilder.GetILGenerator();
-            il.Emit(OpCodes.Ldc_I4, 22);
-            il.Emit(OpCodes.Ret);
-            syntheticParentImplBuilder.DefineMethodOverride(implBuilder, def);
+
+            if (!decl.IsStatic)
+            {
+                il.Emit(OpCodes.Ldarg_0);
+            }
+
+            for (int i = 0; i < decl.GetParameters().Length; i++)
+            {
+                il.Emit(OpCodes.Ldarg, 1 + i);
+            }
+
+            il.Emit(OpCodes.Call, def);
+
+            if (decl.ReturnType != typeof(void))
+            {
+                il.Emit(OpCodes.Ret);
+            }
+
+            syntheticParentImplBuilder.DefineMethodOverride(implBuilder, decl);
         }
 
         var syntheticParentImplType = syntheticParentImplBuilder.CreateType();
