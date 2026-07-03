@@ -59,11 +59,12 @@ public static unsafe class InterfaceInjector
     private static delegate*<void*, bool, ObjectHandleOnStack, bool> delegate_IsInstanceOf_NoCacheLookup = &CastHelpers.IsInstanceOf_NoCacheLookup;
 
     private static readonly List<IDetour> MMHooks = [
-      new NativeHook((nint)delegate_IsInstanceOf_NoCacheLookup, Hooks.IsInstanceOf_NoCacheLookup, false)
+      new NativeHook((nint)delegate_IsInstanceOf_NoCacheLookup, (Hooks.hook_IsInstanceOf_NoCacheLookup)Hooks.IsInstanceOf_NoCacheLookup, false)
     ];
 
     public static void Init()
     {
+        Console.WriteLine($"{(nint)delegate_IsInstanceOf_NoCacheLookup:X16}");
         foreach (var hook in MMHooks)
         {
             hook.Apply();
@@ -95,12 +96,18 @@ public static unsafe class InterfaceInjector
 
     private static class Hooks
     {
+        // TODO: These are cdecl on unix
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate bool orig_IsInstanceOf_NoCacheLookup(void* toTypeHnd, bool throwCastException, ObjectHandleOnStack obj);
-        
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate bool hook_IsInstanceOf_NoCacheLookup(orig_IsInstanceOf_NoCacheLookup orig, void* toTypeHnd, bool throwCastException, ObjectHandleOnStack obj);
+
         //delegate*<void*, bool, ObjectHandleOnStack, bool> orig
         // TODO are these TypeHandles or RuntimeTypeHandles? Is there a difference?
         public static bool IsInstanceOf_NoCacheLookup(orig_IsInstanceOf_NoCacheLookup orig, void* toTypeHnd, bool throwCastException, ObjectHandleOnStack obj)
         {
+            Environment.Exit(12345);
             return true;
             return orig(toTypeHnd, throwCastException, obj) switch
             {

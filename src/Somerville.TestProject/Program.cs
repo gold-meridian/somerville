@@ -27,7 +27,8 @@ Console.WriteLine($"baz is IBar = {baz is IBar}");
 
 Console.WriteLine($"baz.HatedNumber() = {baz.HatedNumber()}");
 Console.WriteLine($"((IBar)(object)foo).FavouriteNumber() = {((IBar)(object)foo).FavouriteNumber()}");
-// Console.WriteLine($"((IBar)(object)baz).FavouriteNumber() = {((IBar)(object)baz).FavouriteNumber()}");
+_ = ((IBar)(object)baz).FavouriteNumber();
+Console.WriteLine($"((IBar)(object)baz).FavouriteNumber() = {((IBar)(object)baz).FavouriteNumber()}");
 
 Console.WriteLine();
 
