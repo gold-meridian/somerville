@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace System.Runtime.CompilerServices;
 
-public static partial class RuntimeHelpers {
+internal static partial class RuntimeHelpers {
     internal static unsafe extern bool AreTypesEquivalent(MethodTable* pMTa, MethodTable* pMTb);
 }
 

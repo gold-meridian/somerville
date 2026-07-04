@@ -5,8 +5,13 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Mono.Cecil;
+using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
 using Somerville.Primitives;
+using MethodAttributes = System.Reflection.MethodAttributes;
+using TypeAttributes = System.Reflection.TypeAttributes;
 
 [assembly: IgnoresAccessChecksTo("System.Private.CoreLib")]
 
@@ -54,17 +59,32 @@ public static unsafe class InterfaceInjector
 
     private static delegate*<void*, bool, ObjectHandleOnStack, bool> delegate_IsInstanceOf_NoCacheLookup = &CastHelpers.IsInstanceOf_NoCacheLookup;
 
-    private static readonly List<IDetour> MMHooks = [
-      new NativeHook((nint)delegate_IsInstanceOf_NoCacheLookup, (Hooks.hook_IsInstanceOf_NoCacheLookup)Hooks.IsInstanceOf_NoCacheLookup, false)
-    ];
+    private static readonly List<IDetour> MMHooks = [];
 
     public static void Init()
     {
+        RuntimeHelpers.PrepareMethod(typeof(CastHelpers).GetMethod(nameof(CastHelpers.IsInstanceOf_NoCacheLookup), BindingFlags.Static | BindingFlags.NonPublic).MethodHandle);
         Console.WriteLine($"{(nint)delegate_IsInstanceOf_NoCacheLookup:X16}");
+        Console.WriteLine($"{typeof(CastHelpers).GetMethod(nameof(CastHelpers.IsInstanceOf_NoCacheLookup), BindingFlags.Static | BindingFlags.NonPublic)!.MethodHandle.GetFunctionPointer():X16}");
+
+        // MMHooks.Add(new NativeHook((nint)delegate_IsInstanceOf_NoCacheLookup, (Hooks.hook_IsInstanceOf_NoCacheLookup)Hooks.IsInstanceOf_NoCacheLookup, false));
+
+        using var dmd = new DynamicMethodDefinition(typeof(CastHelpers).GetMethod(nameof(CastHelpers.IsInstanceOf_NoCacheLookup), BindingFlags.Static | BindingFlags.NonPublic)!);
+        using var il = new ILContext(dmd.Definition);
+        var c = new ILCursor(il);
+        MethodReference md = null!;
+        c.GotoNext(x => x.MatchCall(out md));
+        var realMethod = typeof(CastHelpers).GetMethod(md.Name, BindingFlags.Static | BindingFlags.NonPublic)!;
+        Console.WriteLine(realMethod.Name);
+        Console.WriteLine($"{realMethod.MethodHandle.GetFunctionPointer():X16}");
+        MMHooks.Add(new NativeHook(realMethod.MethodHandle.GetFunctionPointer(), (Hooks.hook_IsInstanceOf_NoCacheLookup)Hooks.IsInstanceOf_NoCacheLookup, applyByDefault: true));
+
+        /*
         foreach (var hook in MMHooks)
         {
             hook.Apply();
         }
+        */
     }
 
     public static void Deinit()
